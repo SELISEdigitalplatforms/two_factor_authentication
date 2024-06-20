@@ -19,7 +19,7 @@ class Devise::TwoFactorAuthenticationController < DeviseController
 
   def resend_code
     resource.send_new_otp
-    redirect_to send("#{resource_name}_two_factor_authentication_path"), notice: I18n.t('devise.two_factor_authentication.code_has_been_sent')
+    render json: { message: I18n.t('devise.two_factor_authentication.code_has_been_sent') }
   end
 
   private
@@ -35,10 +35,10 @@ class Devise::TwoFactorAuthenticationController < DeviseController
     else
       sign_in(resource_name, resource, bypass: true)
     end
-    set_flash_message :notice, :success
+    set_flash_message! :notice, :success
     resource.update_attribute(:second_factor_attempts_count, 0)
 
-    redirect_to after_two_factor_success_path_for(resource)
+    render json: { message: I18n.t('devise.two_factor_authentication.success') }
   end
 
   def set_remember_two_factor_cookie(resource)
@@ -46,8 +46,8 @@ class Devise::TwoFactorAuthenticationController < DeviseController
 
     if expires_seconds && expires_seconds > 0
       cookies.signed[TwoFactorAuthentication::REMEMBER_TFA_COOKIE_NAME] = {
-          value: "#{resource.class}-#{resource.public_send(Devise.second_factor_resource_id)}",
-          expires: expires_seconds.seconds.from_now
+        value: "#{resource.class}-#{resource.public_send(Devise.second_factor_resource_id)}",
+        expires: expires_seconds.seconds.from_now
       }
     end
   end
@@ -59,13 +59,13 @@ class Devise::TwoFactorAuthenticationController < DeviseController
   def after_two_factor_fail_for(resource)
     resource.second_factor_attempts_count += 1
     resource.save
-    set_flash_message :alert, :attempt_failed, now: true
+    set_flash_message! :alert, :attempt_failed, now: true
 
     if resource.max_login_attempts?
       sign_out(resource)
-      render :max_login_attempts_reached
+      render_error(I18n.t('devise.two_factor_authentication.max_login_attempts_reached'))
     else
-      render :show
+      render_error(I18n.t('devise.two_factor_authentication.attempt_failed'))
     end
   end
 
@@ -78,7 +78,11 @@ class Devise::TwoFactorAuthenticationController < DeviseController
     @limit = resource.max_login_attempts
     if resource.max_login_attempts?
       sign_out(resource)
-      render :max_login_attempts_reached and return
+      render_error(I18n.t('devise.two_factor_authentication.max_login_attempts_reached')) and return
     end
+  end
+
+  def render_error(error)
+    render json: { error: error }, status: 422
   end
 end
