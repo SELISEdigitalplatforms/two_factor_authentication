@@ -25,16 +25,15 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency 'rails', '>= 3.1.1'
+  s.add_runtime_dependency 'rails'
   s.add_runtime_dependency 'devise'
   s.add_runtime_dependency 'randexp'
-  s.add_runtime_dependency 'rotp', '>= 4.0.0'
+  s.add_runtime_dependency 'rotp'
   s.add_runtime_dependency 'encryptor'
 
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'rake'
-  s.add_development_dependency 'rspec-rails', '>= 3.0.1'
-  s.add_development_dependency 'capybara', '~> 2.5'
+  s.add_development_dependency 'rspec-rails'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'timecop'
 end
